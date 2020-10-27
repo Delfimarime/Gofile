@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-
 const (
 	EveryFile  string = "EVERY_FILE"
 	AtLeastOne string = "AT_LEAST_ONE"
@@ -26,14 +25,12 @@ type Configuration struct {
 }
 
 type GoEngine struct {
-	sender          Sender
+	sender          Publisher
 	transformer     Transformer
 	discoveryClient DiscoveryClient
 }
 
 func (instance *GoEngine) Run(configuration Configuration) {
-
-	fmt.Println(configuration)
 
 	if instance.sender == nil {
 		panic(errors.New("sender mustn't be null"))
@@ -114,7 +111,7 @@ func (instance *GoEngine) Run(configuration Configuration) {
 
 }
 
-func (instance *GoEngine) SetSender(sender Sender) {
+func (instance *GoEngine) SetSender(sender Publisher) {
 	if sender != nil {
 		instance.sender = sender
 	}

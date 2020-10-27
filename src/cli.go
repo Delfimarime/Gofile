@@ -19,12 +19,12 @@ const (
 func main() {
 
 	engine := GoEngine{}
-	engine.SetSender(&DefaultSender{})
+	engine.SetSender(&PublisherImpl{})
 	engine.SetTransformer(&DefaultTransformer{})
 	engine.SetDiscoveryClient(&BasicDiscoveryClient{})
 
-	var appName string = "gofile"
-	var appVersion string = "1.0.0-RELEASE"
+	var appName = "gofile"
+	var appVersion = "1.0.0-RELEASE"
 
 	commando.
 		SetExecutableName(appName).SetVersion(appVersion).
@@ -42,7 +42,7 @@ func main() {
 		AddFlag("verbose,v", VERBOSE, commando.Bool, false).
 		AddFlag("username,u", USERNAME, commando.String, ".").
 		AddFlag("password,p", PASSWORD, commando.String, ".").
-		AddFlag("strategy,s", STRATEGY, commando.String, "./").
+		AddFlag("strategy,s", STRATEGY, commando.String, AtLeastOne).
 		AddFlag("attribute,attr", ATTRIBUTE, commando.String, "file").
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 

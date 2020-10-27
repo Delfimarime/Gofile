@@ -1,23 +1,25 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 )
 
-type Sender interface {
+type Publisher interface {
 	send(req http.Request) bool
 	sendMany(array []http.Request) []bool
 }
 
-type DefaultSender struct {
+type PublisherImpl struct {
 }
 
-func (instance *DefaultSender) send(req http.Request) bool {
+func (instance *PublisherImpl) send(req http.Request) bool {
 	client := http.Client{}
 	return instance.submit(client, &req)
 }
 
-func (instance *DefaultSender) sendMany(array []http.Request) []bool {
+func (instance *PublisherImpl) sendMany(array []http.Request) []bool {
 
 	if len(array) == 0 {
 		panic("no response to be sent")
@@ -29,7 +31,7 @@ func (instance *DefaultSender) sendMany(array []http.Request) []bool {
 
 	answers := make([]bool, 0)
 
-	client := http.Client{}
+	client := http.Client{Timeout: time.Second * 20}
 
 	for _, req := range array {
 		answers = append(answers, instance.submit(client, &req))
@@ -38,12 +40,15 @@ func (instance *DefaultSender) sendMany(array []http.Request) []bool {
 	return answers
 }
 
-func (instance *DefaultSender) submit(client http.Client, req *http.Request) bool {
+func (instance *PublisherImpl) submit(client http.Client, req *http.Request) bool {
+
 	resp, err := client.Do(req)
 
 	if err != nil {
 		return false
 	}
+
+	fmt.Println(resp)
 
 	return resp.Status == "200 OK"
 }

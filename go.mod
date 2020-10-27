@@ -1,4 +1,4 @@
-module github.com/VodacomMZ/Gofile
+module github.com/vodacommz/gofile
 
 go 1.15
 

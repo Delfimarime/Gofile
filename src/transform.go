@@ -36,16 +36,13 @@ func toMono(content []os.File, configuration Configuration) []http.Request {
 		index = 0
 	}
 
-	req, _, writer := toResponse(&content[0], configuration, index)
+	req, _, writer := toResponse(&content[0], configuration)
 
 	if index > -1 {
 		array := content[1:]
 
-		index = 1
-
 		for _, each := range array {
-			attach(&writer, configuration, index, &each)
-			index += 1
+			setFile(&writer, configuration, &each)
 		}
 	}
 
@@ -71,7 +68,7 @@ func toFlux(content []os.File, configuration Configuration) []http.Request {
 	return array
 }
 
-func attach(writer *multipart.Writer, configuration Configuration, index int, file *os.File) {
+func setFile(writer *multipart.Writer, configuration Configuration, file *os.File) {
 
 	var err error
 	var fw io.Writer
@@ -86,10 +83,6 @@ func attach(writer *multipart.Writer, configuration Configuration, index int, fi
 		property = "file"
 	}
 
-	if index >= 0 {
-		property = property + "[]"
-	}
-
 	if fw, err = writer.CreateFormFile(property, file.Name()); err != nil {
 		panic(err)
 	}
@@ -100,24 +93,27 @@ func attach(writer *multipart.Writer, configuration Configuration, index int, fi
 
 }
 
-func toResponse(file *os.File, configuration Configuration, index int) (http.Request, bytes.Buffer, multipart.Writer) {
+func toResponse(file *os.File, configuration Configuration) (http.Request, bytes.Buffer, multipart.Writer) {
 
-	var buffer bytes.Buffer
-	writer := multipart.NewWriter(&buffer)
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
 
-	attach(writer, configuration, index, file)
+	setFile(writer, configuration, file)
 
-	req, err := http.NewRequest("POST", configuration.Endpoint, &buffer)
+	req, err := http.NewRequest("POST", configuration.Endpoint, &body)
 
 	if err != nil {
 		panic(err)
 	}
-	// Don't forget to set the content type, this will contain the boundary.
+
+	req.Header.Del("Accept")
+	req.Header.Del("Content-Type")
+	req.Header.Set("Accept", "*/*")
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	if len(configuration.Username) > 0 {
 		req.SetBasicAuth(configuration.Username, configuration.Password)
 	}
 
-	return *req, buffer, *writer
+	return *req, body, *writer
 }

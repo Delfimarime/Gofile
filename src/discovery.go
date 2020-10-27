@@ -32,7 +32,7 @@ func (instance *BasicDiscoveryClient) getFiles(path string) []os.File {
 
 	var children []string
 
-	err = filepath.Walk(fi.Name(), addChildren(&children))
+	err = filepath.Walk(path, addChildren(&children))
 
 	if err != nil {
 		panic(err)

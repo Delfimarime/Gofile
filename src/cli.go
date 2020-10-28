@@ -57,6 +57,10 @@ func main() {
 			var strategy = flags["strategy"].Value.(string)
 			var attribute = flags["attribute"].Value.(string)
 
+			if timeout < 0 {
+				timeout = 10
+			}
+
 			if username == "." && password == "." {
 				username = ""
 				password = ""

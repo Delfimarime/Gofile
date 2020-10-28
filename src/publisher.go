@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -144,36 +145,81 @@ func (instance *PublisherImpl) sendForm(client http.Client, configuration Config
 
 func (instance *PublisherImpl) sendBinary(client http.Client, configuration Configuration, filename string) (bool, int, []byte) {
 
+	if configuration.Verbose {
+		fmt.Println("<----------------- Send " + filename + " through binary body ----------------->\n")
+	}
+
 	data, err := os.Open(filename)
 
+	if configuration.Verbose {
+		fmt.Println("Open:" + filename)
+	}
+
 	if err != nil {
-		panic(err)
-		//return false , nil, make([]byte,0)
+		if configuration.Verbose {
+			fmt.Println("Cannot Open:" + filename + " , cause:")
+			fmt.Println(err)
+		}
+		return false, -1, nil
 	}
 
 	req, err := http.NewRequest("POST", configuration.Endpoint, data)
 
+	if configuration.Verbose {
+		fmt.Println("Building Http Request for:" + filename)
+	}
+
 	if err != nil {
-		panic(err)
-		//return false , nil, make([]byte,0)
+
+		if configuration.Verbose {
+			fmt.Println("Cannot build Http Request for:" + filename + ", cause:")
+			fmt.Println(err)
+		}
+
+		return false, -1, nil
 	}
 
 	if len(configuration.Username) > 0 {
+
 		req.SetBasicAuth(configuration.Username, configuration.Password)
+
+		if configuration.Verbose {
+			fmt.Println("Username & Password detected for basic authentication on " + configuration.Endpoint + " for file:" + filename)
+		}
+
 	}
 
 	resp, err := client.Do(req)
 
 	if err != nil {
-		panic(err)
-		//return false , nil, make([]byte,0)
+
+		if configuration.Verbose {
+			fmt.Println("Failed Http Request submission on " + configuration.Endpoint + " for:" + filename + ", cause:")
+			fmt.Println(err)
+		}
+
+		return false, -1, nil
+	}
+
+	if configuration.Verbose {
+		fmt.Println("Http Request submitted for:" + filename)
 	}
 
 	content, err := ioutil.ReadAll(resp.Body)
 
 	if err != nil {
+
+		if configuration.Verbose {
+			fmt.Println("Cannot ready Response for:" + filename + ", cause:")
+			fmt.Println(err)
+		}
+
+		fmt.Println("<----------------- Send " + filename + " through binary body ----------------->\n")
+
 		return resp.StatusCode == 200 || resp.StatusCode == 201, resp.StatusCode, nil
 	}
+
+	fmt.Println("<----------------- Send " + filename + " through binary body ----------------->\n")
 
 	return resp.StatusCode == 200 || resp.StatusCode == 201, resp.StatusCode, content
 
@@ -205,5 +251,11 @@ func newClient(configuration Configuration) http.Client {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	return http.Client{Transport: transport, Timeout: time.Duration(configuration.Timeout) * time.Second}
+	timeout := configuration.Timeout
+
+	if timeout < 0 {
+		timeout = 10
+	}
+
+	return http.Client{Transport: transport, Timeout: time.Duration(timeout) * time.Second}
 }

@@ -45,11 +45,11 @@ Flags:
    -a, --attribute               form attribute to which the files are mapped into on the multipart/form-data HTTP Request (default: .)
    -c, --compact                 determines if the files are to be sent on a single HTTP Request (must be used in combination with --attribute option) (default: false)
    -h, --help                    displays usage information of the application or a command (default: false)
-   -p, --password                password for basic authentication (in case the servers supports it) (default: .)
+   -p, --password                password for basic authentication (in case the servers supports it)
    -s, --strategy                the post upload validation criteria to determine whether the operation was successful or not. EVERY_FILE (only successful when every file is correctly uploaded); AT_LEAST_ONE(successful whenever at least one (1) file is correctly uploaded) (default: AT_LEAST_ONE)
    -t, --timeout                 timeout for the HTTP Request (default: 10)
-   -u, --username                username for basic authentication (in case the servers supports it) (default: .)
-   -v, --verbose                 whether the command should run in verbose mode or not, true for verbose (default: false)
+   -u, --username                username for basic authentication (in case the servers supports it)
+   -V, --verbose                 whether the command should run in verbose mode or not, true for verbose (default: false)
  ```
 
 ## Copyright and License Information

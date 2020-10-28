@@ -2,12 +2,14 @@ package main
 
 import (
 	"bytes"
+	"crypto/tls"
 	"errors"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
+	"time"
 )
 
 type Publisher interface {
@@ -19,8 +21,7 @@ type PublisherImpl struct {
 }
 
 func (instance *PublisherImpl) send(configuration Configuration, filename string) (bool, int, []byte) {
-	client := http.Client{}
-	return instance.submitSingle(client, configuration, filename)
+	return instance.submitSingle(newClient(configuration), configuration, filename)
 }
 
 func (instance *PublisherImpl) sendMany(configuration Configuration, array []string) ([]bool, []int, [][]byte) {
@@ -34,9 +35,7 @@ func (instance *PublisherImpl) sendMany(configuration Configuration, array []str
 		return []bool{sent}, []int{statusCode}, [][]byte{content}
 	}
 
-	client := http.Client{}
-
-	return instance.submitMany(client, configuration, array)
+	return instance.submitMany(newClient(configuration), configuration, array)
 }
 
 func (instance *PublisherImpl) submitSingle(client http.Client, configuration Configuration, filename string) (bool, int, []byte) {
@@ -199,4 +198,12 @@ func setFile(writer *multipart.Writer, attr string, filename string) {
 		panic(err)
 	}
 
+}
+
+func newClient(configuration Configuration) http.Client {
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	return http.Client{Transport: transport, Timeout: time.Duration(configuration.Timeout) * time.Second}
 }

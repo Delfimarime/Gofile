@@ -14,6 +14,7 @@ const (
 )
 
 type Configuration struct {
+	Timeout   int
 	Verbose   bool
 	Compact   bool
 	File      string

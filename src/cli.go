@@ -13,10 +13,11 @@ const (
 	USERNAME  string = "username for basic authentication in case the servers supports it"
 	PASSWORD  string = "password for basic authentication in case the servers supports it"
 	VERBOSE   string = "whether the command should run in verbose mode or not, true for verbose"
-	STRATEGY  string = "strategy to determine whether the operation was successful.\nEVERY_FILE (only successful when every file is correctly uploaded)\nAT_LEAST_ONE(successful whenever at least one (1) file is correctly uploaded) "
+	STRATEGY  string = "strategy to determine whether the operation was successful.\nEVERY_FILE (only successful when every file is correctly uploaded)\nAT_LEAST_ONE(successful whenever at least one (1) file is correctly uploaded)"
+	TIMEOUT   string = "request timeout in seconds"
 )
 
-func show() {
+func main() {
 
 	engine := GoEngine{}
 	engine.SetSender(&PublisherImpl{})
@@ -43,10 +44,12 @@ func show() {
 		AddFlag("password,p", PASSWORD, commando.String, ".").
 		AddFlag("strategy,s", STRATEGY, commando.String, AtLeastOne).
 		AddFlag("attribute,attr", ATTRIBUTE, commando.String, ".").
+		AddFlag("timeout,t", TIMEOUT, commando.Int, 10).
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 
 			var file = args["file"].Value
 			var endpoint = args["url"].Value
+			var timeout = flags["timeout"].Value.(int)
 			var isCompact = flags["compact"].Value.(bool)
 			var isVerbose = flags["verbose"].Value.(bool)
 			var username = flags["username"].Value.(string)
@@ -60,22 +63,22 @@ func show() {
 			}
 
 			if attribute == "." {
-				attribute=""
+				attribute = ""
 			}
 
 			engine.Run(Configuration{
 				File:      file,
+				Timeout:   timeout,
 				Username:  username,
 				Password:  password,
 				Strategy:  strategy,
 				Endpoint:  endpoint,
-				Verbose:   isVerbose,
 				Compact:   isCompact,
 				Attribute: attribute,
+				Verbose:   isVerbose,
 			})
 
 		})
-
 	// parse command-line arguments
 	commando.Parse(nil)
 }

@@ -16,11 +16,10 @@ const (
 	STRATEGY  string = "strategy to determine whether the operation was successful.\nEVERY_FILE (only successful when every file is correctly uploaded)\nAT_LEAST_ONE(successful whenever at least one (1) file is correctly uploaded) "
 )
 
-func main() {
+func show() {
 
 	engine := GoEngine{}
 	engine.SetSender(&PublisherImpl{})
-	engine.SetTransformer(&DefaultTransformer{})
 	engine.SetDiscoveryClient(&BasicDiscoveryClient{})
 
 	var appName = "gofile"
@@ -43,7 +42,7 @@ func main() {
 		AddFlag("username,u", USERNAME, commando.String, ".").
 		AddFlag("password,p", PASSWORD, commando.String, ".").
 		AddFlag("strategy,s", STRATEGY, commando.String, AtLeastOne).
-		AddFlag("attribute,attr", ATTRIBUTE, commando.String, "file").
+		AddFlag("attribute,attr", ATTRIBUTE, commando.String, ".").
 		SetAction(func(args map[string]commando.ArgValue, flags map[string]commando.FlagValue) {
 
 			var file = args["file"].Value
@@ -58,6 +57,10 @@ func main() {
 			if username == "." && password == "." {
 				username = ""
 				password = ""
+			}
+
+			if attribute == "." {
+				attribute=""
 			}
 
 			engine.Run(Configuration{

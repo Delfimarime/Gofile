@@ -1,21 +1,20 @@
 package main
 
 import (
-	"os"
 	"path/filepath"
 )
 
 type DiscoveryClient interface {
-	getFiles(path string) []os.File
+	getFiles(path string) []string
 }
 
 type BasicDiscoveryClient struct {
 }
 
-func (instance *BasicDiscoveryClient) getFiles(path string) []os.File {
+func (instance *BasicDiscoveryClient) getFiles(path string) []string {
 
 	if len(path) == 0 {
-		return make([]os.File, 0)
+		return make([]string, 0)
 	}
 
 	file := openFile(path)
@@ -27,7 +26,7 @@ func (instance *BasicDiscoveryClient) getFiles(path string) []os.File {
 	}
 
 	if !fi.IsDir() {
-		return []os.File{*file}
+		return []string{path}
 	}
 
 	var children []string
@@ -38,11 +37,5 @@ func (instance *BasicDiscoveryClient) getFiles(path string) []os.File {
 		panic(err)
 	}
 
-	array := make([]os.File, 0)
-
-	for _, child := range children {
-		array = append(array, *openFile(child))
-	}
-
-	return array
+	return children
 }

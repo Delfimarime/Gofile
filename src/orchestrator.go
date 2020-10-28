@@ -26,7 +26,6 @@ type Configuration struct {
 
 type GoEngine struct {
 	sender          Publisher
-	transformer     Transformer
 	discoveryClient DiscoveryClient
 }
 
@@ -34,10 +33,6 @@ func (instance *GoEngine) Run(configuration Configuration) {
 
 	if instance.sender == nil {
 		panic(errors.New("sender mustn't be null"))
-	}
-
-	if instance.transformer == nil {
-		panic(errors.New("transformer mustn't be null"))
 	}
 
 	if instance.discoveryClient == nil {
@@ -77,36 +72,41 @@ func (instance *GoEngine) Run(configuration Configuration) {
 		panic("no file found for:" + configuration.File)
 	}
 
-	req := instance.transformer.transform(files, configuration)
-
-	if len(req) == 0 {
-		panic("no request to be submitted:" + configuration.File)
-	}
-
-	resp := instance.sender.sendMany(req)
+	sent, statusCode, content := instance.sender.sendMany(configuration, files)
 
 	fmt.Println("----------------------------- REPORT -----------------------------")
+	everyFileSent := true
 
 	if configuration.Compact {
-		fmt.Println(asMono(files, resp))
+		panic(errors.New("compact is unsupported"))
 	} else {
-		fmt.Println(asFlux(files, resp))
-	}
 
-	fmt.Println("----------------------------- REPORT -----------------------------")
+		for index := range files {
 
-	var isValid = true
+			fmt.Println("filename   :	" + files[index])
+			fmt.Println("uploaded   :	" + strconv.FormatBool(sent[index]))
+			fmt.Println("status code:	" + strconv.Itoa(statusCode[index]))
 
-	for index := range files {
-		isValid = resp[index]
+			if configuration.Verbose {
+				fmt.Println("content    :	" + string(content[index]))
+			}
 
-		if (configuration.Strategy == AtLeastOne && isValid) || configuration.Strategy != EveryFile {
-			return
-		} else if configuration.Strategy != AtLeastOne && !isValid {
-			fmt.Println("\nexpected every file to be upload but an error has occurred")
-			os.Exit(1)
+			fmt.Print("\n\n")
+
+			if everyFileSent && !sent[index] {
+				everyFileSent = false
+			}
+
 		}
 
+	}
+	fmt.Println("----------------------------- REPORT -----------------------------")
+
+	if (configuration.Strategy == AtLeastOne && everyFileSent) || configuration.Strategy != EveryFile {
+		return
+	} else if configuration.Strategy != AtLeastOne && !everyFileSent {
+		fmt.Println("\nexpected every file to be upload but an error has occurred")
+		os.Exit(1)
 	}
 
 }
@@ -114,38 +114,6 @@ func (instance *GoEngine) Run(configuration Configuration) {
 func (instance *GoEngine) SetSender(sender Publisher) {
 	if sender != nil {
 		instance.sender = sender
-	}
-}
-
-func asFlux(files []os.File, resp []bool) string {
-	s := ""
-
-	for index, each := range files {
-		s += each.Name() + " => " + strconv.FormatBool(resp[index]) + "\n"
-	}
-
-	return s
-}
-
-func asMono(files []os.File, resp []bool) string {
-	s := ""
-
-	for index, each := range files {
-		if index == 0 {
-			s = each.Name()
-		} else {
-			s += " , " + each.Name()
-		}
-	}
-
-	s += " => " + strconv.FormatBool(resp[0])
-
-	return s
-}
-
-func (instance *GoEngine) SetTransformer(transformer Transformer) {
-	if transformer != nil {
-		instance.transformer = transformer
 	}
 }
 

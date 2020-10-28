@@ -13,6 +13,12 @@ const (
 	AtLeastOne string = "AT_LEAST_ONE"
 )
 
+const (
+	RawType    string = "raw"
+	BinaryType string = "binary"
+	FormType   string = "multipart/form-data"
+)
+
 type Configuration struct {
 	Timeout   int
 	Verbose   bool
@@ -23,6 +29,7 @@ type Configuration struct {
 	Password  string
 	Attribute string
 	Strategy  string
+	Type      string
 }
 
 type GoEngine struct {
@@ -75,7 +82,7 @@ func (instance *GoEngine) Run(configuration Configuration) {
 		panic(errors.New("no file found for:" + configuration.File))
 	}
 
-	sent, statusCode, content := instance.sender.sendMany(configuration, files)
+	sent, statusCode, content := instance.sender.publish(configuration, files)
 
 	everyFileSent := analyze(configuration, files, sent, statusCode, content)
 

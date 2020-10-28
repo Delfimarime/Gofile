@@ -85,6 +85,7 @@ func main() {
 
 		}).SetShortDescription(description).
 		SetDescription(description+"into a specific HTTP Server Endpoint")
+
 	// parse command-line arguments
 	commando.Parse(nil)
 }

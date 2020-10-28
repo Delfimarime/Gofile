@@ -14,47 +14,28 @@ import (
 )
 
 type Publisher interface {
-	send(configuration Configuration, file string) (bool, int, []byte)
-	sendMany(configuration Configuration, array []string) ([]bool, []int, [][]byte)
+	publish(configuration Configuration, array []string) ([]bool, []int, [][]byte)
 }
 
 type PublisherImpl struct {
 }
 
-func (instance *PublisherImpl) send(configuration Configuration, filename string) (bool, int, []byte) {
-	return instance.submitSingle(newClient(configuration), configuration, filename)
-}
-
-func (instance *PublisherImpl) sendMany(configuration Configuration, array []string) ([]bool, []int, [][]byte) {
+func (instance *PublisherImpl) publish(configuration Configuration, array []string) ([]bool, []int, [][]byte) {
 
 	if len(array) == 0 {
 		panic("no request to be sent")
 	}
 
 	if len(array) == 1 {
-		sent, statusCode, content := instance.send(configuration, array[0])
+		v1, v2, v3 := instance.send(newClient(configuration), configuration, array)
+		sent, statusCode, content := v1[0], v2[0], v3[0]
 		return []bool{sent}, []int{statusCode}, [][]byte{content}
 	}
 
-	return instance.submitMany(newClient(configuration), configuration, array)
+	return instance.send(newClient(configuration), configuration, array)
 }
 
-func (instance *PublisherImpl) submitSingle(client http.Client, configuration Configuration, filename string) (bool, int, []byte) {
-
-	withAttribute := len(configuration.Attribute) == 0
-
-	if !withAttribute && configuration.Compact {
-		panic(errors.New("compact isn't supported"))
-	}
-
-	if !withAttribute {
-		return instance.sendBinary(client, configuration, filename)
-	}
-
-	return instance.sendForm(client, configuration, []string{filename})
-}
-
-func (instance *PublisherImpl) submitMany(client http.Client, configuration Configuration, filename []string) ([]bool, []int, [][]byte) {
+func (instance *PublisherImpl) send(client http.Client, configuration Configuration, filename []string) ([]bool, []int, [][]byte) {
 
 	withAttribute := len(configuration.Attribute) > 0
 

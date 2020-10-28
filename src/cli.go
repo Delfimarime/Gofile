@@ -6,15 +6,15 @@ import (
 )
 
 const (
-	ENDPOINT  string = "server url"
-	COMPACT   string = "whether the upload is to be single request or not"
-	FILE      string = "file or directory (whose files are) intend for upload"
-	ATTRIBUTE string = "form attribute to which the files are to be provided in"
-	USERNAME  string = "username for basic authentication in case the servers supports it"
-	PASSWORD  string = "password for basic authentication in case the servers supports it"
+	ENDPOINT  string = "server endpoint"
+	TIMEOUT   string = "timeout for the HTTP Request"
+	FILE      string = "file or directory (whose files are) intend to be uploaded"
+	USERNAME  string = "username for basic authentication (in case the servers supports it)"
+	PASSWORD  string = "password for basic authentication (in case the servers supports it)"
 	VERBOSE   string = "whether the command should run in verbose mode or not, true for verbose"
-	STRATEGY  string = "strategy to determine whether the operation was successful.\nEVERY_FILE (only successful when every file is correctly uploaded)\nAT_LEAST_ONE(successful whenever at least one (1) file is correctly uploaded)"
-	TIMEOUT   string = "request timeout in seconds"
+	ATTRIBUTE string = "form attribute to which the files are mapped into on the multipart/form-data HTTP Request"
+	COMPACT   string = "determines if the files are to be sent on a single HTTP Request (must be used in combination with --attribute option)"
+	STRATEGY  string = "the post upload validation criteria to determine whether the operation was successful or not. EVERY_FILE (only successful when every file is correctly uploaded); AT_LEAST_ONE(successful whenever at least one (1) file is correctly uploaded)"
 )
 
 func main() {
@@ -25,6 +25,7 @@ func main() {
 
 	var appName = "gofile"
 	var appVersion = "1.0.0-RELEASE"
+	var description = "Uploads a specific file or directory"
 
 	commando.
 		SetExecutableName(appName).SetVersion(appVersion).
@@ -82,7 +83,8 @@ func main() {
 				Verbose:   isVerbose,
 			})
 
-		})
+		}).SetShortDescription(description).
+		SetDescription(description+"into a specific HTTP Server Endpoint")
 	// parse command-line arguments
 	commando.Parse(nil)
 }

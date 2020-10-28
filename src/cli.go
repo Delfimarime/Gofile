@@ -41,7 +41,7 @@ func main() {
 		AddArgument("file", FILE, "./").
 		AddFlag("compact,c", COMPACT, commando.Bool, false).
 		AddFlag("verbose,v", VERBOSE, commando.Bool, false).
-		AddFlag("username,u", USERNAME, commando.String, ".").
+		AddFlag("username,u", USERNAME, commando.String,".").
 		AddFlag("password,p", PASSWORD, commando.String, ".").
 		AddFlag("strategy,s", STRATEGY, commando.String, AtLeastOne).
 		AddFlag("attribute,attr", ATTRIBUTE, commando.String, ".").

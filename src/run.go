@@ -11,7 +11,7 @@ func main() {
 		Endpoint:  "http://localhost:3000",
 		Verbose: true,
 		Attribute: "file",
-		Compact: false,
+		Compact: true,
 	})
 
 }

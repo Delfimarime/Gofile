@@ -74,11 +74,36 @@ func (instance *GoEngine) Run(configuration Configuration) {
 
 	sent, statusCode, content := instance.sender.sendMany(configuration, files)
 
-	fmt.Println("----------------------------- REPORT -----------------------------")
+	everyFileSent := analyze(configuration, files, sent, statusCode, content)
+
+	if (configuration.Strategy == AtLeastOne && everyFileSent) || configuration.Strategy != EveryFile {
+		return
+	} else if configuration.Strategy != AtLeastOne && !everyFileSent {
+		fmt.Println("\nexpected every file to be upload but an error has occurred")
+		os.Exit(1)
+	}
+
+}
+
+func analyze(configuration Configuration, files []string, sent []bool, statusCode []int, content [][]byte) bool {
+	fmt.Println("\n----------------------------- REPORT -----------------------------")
 	everyFileSent := true
 
 	if configuration.Compact {
-		panic(errors.New("compact is unsupported"))
+
+		for _, each := range files {
+			fmt.Println("filename   :	" + each)
+		}
+
+		fmt.Println("uploaded   :	" + strconv.FormatBool(sent[0]))
+		fmt.Println("status code:	" + strconv.Itoa(statusCode[0]))
+
+		if configuration.Verbose {
+			fmt.Println("content    :	" + string(content[0]))
+		}
+
+		everyFileSent = everyFileSent && sent[0]
+
 	} else {
 
 		for index := range files {
@@ -100,15 +125,8 @@ func (instance *GoEngine) Run(configuration Configuration) {
 		}
 
 	}
-	fmt.Println("----------------------------- REPORT -----------------------------")
-
-	if (configuration.Strategy == AtLeastOne && everyFileSent) || configuration.Strategy != EveryFile {
-		return
-	} else if configuration.Strategy != AtLeastOne && !everyFileSent {
-		fmt.Println("\nexpected every file to be upload but an error has occurred")
-		os.Exit(1)
-	}
-
+	fmt.Println("\n----------------------------- REPORT -----------------------------")
+	return everyFileSent
 }
 
 func (instance *GoEngine) SetSender(sender Publisher) {
